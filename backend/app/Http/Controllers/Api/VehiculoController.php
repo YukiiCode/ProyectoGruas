@@ -1,49 +1,46 @@
 <?php
+namespace App\Http\Controllers;
 
-namespace App\Http\Controllers\Api;
-
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Models\Vehiculo;
 
 class VehiculoController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        //
+        try {
+            // Obtener todos los vehículos
+            $vehiculos = Vehiculo::all();
+
+            // Devolver una respuesta JSON
+            return response()->json($vehiculos, 200);
+        } catch (\Exception $e) {
+            // Capturar cualquier excepción y devolver un mensaje de error
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        //
-    }
+        try {
+            // Validar los datos de entrada
+            $request->validate([
+                'matricula' => 'required|string|unique:vehiculos',
+                'marca' => 'required|string',
+                'modelo' => 'required|string',
+                'color' => 'nullable|string',
+                'tipovehiculo' => 'required|string',
+                'estado' => 'required|string',
+            ]);
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
+            // Crear un nuevo vehículo
+            $vehiculo = Vehiculo::create($request->all());
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+            // Devolver una respuesta exitosa
+            return response()->json(['message' => 'Vehículo creado', 'data' => $vehiculo], 201);
+        } catch (\Exception $e) {
+            // Capturar cualquier excepción y devolver un mensaje de error
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 }

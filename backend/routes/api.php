@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\Api\VehiculoController;
+use App\Http\Controllers\VehiculoController;
 use App\Http\Controllers\Api\RetiradaController;
 
 
@@ -16,3 +16,4 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('vehiculos', VehiculoController::class);
     Route::apiResource('retiradas', RetiradaController::class);
 });
+
