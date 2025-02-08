@@ -1,11 +1,14 @@
 <?php
-namespace App\Http\Controllers;
+
+namespace App\Http\Controllers\Api;
 
 use Illuminate\Http\Request;
 use App\Models\Vehiculo;
+use App\Http\Controllers\Controller;
 
 class VehiculoController extends Controller
 {
+
     public function index()
     {
         try {
