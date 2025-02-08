@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  # Servicio de MySQL
+  mysql:
+    image: mysql:8.0
+    container_name: mysql-container
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword  # Contraseña del usuario root
+      MYSQL_DATABASE: gestion_gruas     # Base de datos predeterminada
+      MYSQL_USER: user                  # Usuario personalizado
+      MYSQL_PASSWORD: password          # Contraseña del usuario personalizado
+    ports:
+      - "3306:3306"                      # Puerto MySQL expuesto
+    volumes:
+      - mysql_data:/var/lib/mysql        # Persistencia de datos
+
+  # Servicio de phpMyAdmin
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin-container
+    restart: always
+    environment:
+      PMA_HOST: mysql                   # Host de MySQL (nombre del servicio)
+      MYSQL_ROOT_PASSWORD: rootpassword # Contraseña del usuario root
+    ports:
+      - "8080:80"                        # Puerto para acceder a phpMyAdmin
+    depends_on:
+      - mysql                           # Asegura que MySQL se inicie primero
+
+# Volúmenes para persistencia de datos
+volumes:
+  mysql_data:
