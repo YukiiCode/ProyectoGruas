@@ -11,6 +11,7 @@ class User extends Authenticatable
 
     protected $table = 'usuarios'; // Especifica la tabla personalizada
 
+
     protected $fillable = [
         'nombre', 'usuario', 'password', 'rol',
     ];
