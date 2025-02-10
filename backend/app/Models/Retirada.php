@@ -23,4 +23,5 @@ class Retirada extends Model
         'total',
         'opcionespago'
     ];
+
 }
