@@ -16,7 +16,5 @@ Route::get('/retiradas', [RetiradaController::class, 'index']);
 
 // Rutas protegidas por Sanctum
 Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/vehiculos', [VehiculoController::class, 'store']);
-  
+    // Route::post('/vehiculos', [VehiculoController::class, 'store']);
 });
-
