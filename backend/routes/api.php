@@ -11,11 +11,12 @@ use App\Http\Controllers\Api\RetiradaController;
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
 Route::get('/vehiculos', [VehiculoController::class, 'index']);
+Route::get('/retiradas', [RetiradaController::class, 'index']);
 
 
 // Rutas protegidas por Sanctum
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/vehiculos', [VehiculoController::class, 'store']);
-    Route::apiResource('retiradas', RetiradaController::class);
+  
 });
 
