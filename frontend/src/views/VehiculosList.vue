@@ -1,48 +1,34 @@
 <template>
   <div class="container">
     <!-- Card principal -->
-    <Card>
-      <template #header>
-        <h2>Vehículos Registrados</h2>
-      </template>
-      <template #content>
-        <!-- Campo de Filtro -->
-        <div class="filter-container p-inputgroup">
-          <span class="p-inputgroup-addon">
-            <i class="pi pi-search"></i>
-          </span>
-          <InputText
-            v-model="filtro"
-            placeholder="Filtrar por matrícula..."
-            class="form-control"
-          />
-        </div>
+    <!-- Campo de Filtro -->
+    <div class="filter-container p-inputgroup">
+      <span class="p-inputgroup-addon">
+        <i class="pi pi-search"></i>
+      </span>
+      <InputText v-model="filtro" placeholder="Filtrar por matrícula..." class="form-control" />
+    </div>
 
-        <!-- DataTable de Vehículos -->
-        <DataTable
-          :value="vehiculosFiltrados"
-          :paginator="true"
-          :rows="10"
-          paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport"
-          :rowsPerPageOptions="[5, 10, 20]"
-          responsiveLayout="scroll"
-          class="custom-table mt-4"
-        >
-          <template #empty>
-            <div class="no-results">No se encontraron resultados</div>
-          </template>
-          <template #loading>
-            <div class="loading-message">Cargando datos...</div>
-          </template>
-          <Column field="matricula" header="Matrícula" sortable></Column>
-          <Column field="marca" header="Marca" sortable></Column>
-          <Column field="modelo" header="Modelo" sortable></Column>
-          <Column field="color" header="Color"></Column>
-          <Column field="tipovehiculo" header="Tipo de Vehículo"></Column>
-          <Column field="estado" header="Estado"></Column>
-        </DataTable>
+    <!-- DataTable de Vehículos -->
+    <DataTable :value="vehiculosFiltrados" :paginator="true" :rows="10"
+      paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink " 
+      responsiveLayout="scroll" class="custom-table mt-4">
+      <template #header>
+        <h3>Vehículos Registrados</h3>
       </template>
-    </Card>
+      <template #empty>
+        <div class="no-results">No se encontraron resultados</div>
+      </template>
+      <template #loading>
+        <div class="loading-message">Cargando datos...</div>
+      </template>
+      <Column field="matricula" header="Matrícula" sortable></Column>
+      <Column field="marca" header="Marca" sortable></Column>
+      <Column field="modelo" header="Modelo" sortable></Column>
+      <Column field="color" header="Color"></Column>
+      <Column field="tipovehiculo" header="Tipo de Vehículo"></Column>
+      <Column field="estado" header="Estado"></Column>
+    </DataTable>
   </div>
 </template>
 
@@ -51,14 +37,12 @@ import apiClient from '@/services/api';
 import { ref, computed } from 'vue';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
-import Card from 'primevue/card';
 import InputText from 'primevue/inputtext';
 
 export default {
   components: {
     DataTable,
     Column,
-    Card,
     InputText,
   },
   setup() {

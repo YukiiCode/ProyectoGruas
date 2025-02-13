@@ -1,29 +1,26 @@
 <template>
   <div class="container">
     <!-- Campo de Filtro -->
-    <div class="filter-container">
-      <input
-        type="text"
-        v-model="filtro"
-        placeholder="Filtrar por nombre o NIF..."
-        class="form-control"
-      />
+    <div class="filter-container p-inputgroup">
+      <span class="p-inputgroup-addon">
+        <i class="pi pi-search"></i>
+      </span>
+      <InputText v-model="filtro" placeholder="Filtrar por matrícula..." class="form-control" />
     </div>
 
     <!-- DataTable de Retiradas -->
-    <DataTable
-      :value="retiradasFiltradas"
-      :paginator="true"
-      :rows="10"
-      paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageReport RowsPerPageDropdown"
-      :rowsPerPageOptions="[5, 10, 20]"
-      responsiveLayout="scroll"
-      class="custom-table"
-    >
+    <DataTable :value="retiradasFiltradas" :paginator="true" :rows="10"
+      paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
+      responsiveLayout="scroll" class="custom-table mt-4">
       <template #header>
         <h3>Retiradas Registradas</h3>
       </template>
-
+      <template #empty>
+        <div class="no-results">No se encontraron resultados</div>
+      </template>
+      <template #loading>
+        <div class="loading-message">Cargando datos...</div>
+      </template>
       <Column field="nombre" header="Nombre" sortable></Column>
       <Column field="nif" header="NIF" sortable></Column>
       <Column field="fecha" header="Fecha" sortable></Column>
@@ -35,10 +32,6 @@
           </button>
         </template>
       </Column>
-
-      <template #empty>
-        <div class="no-results">No se encontraron resultados</div>
-      </template>
     </DataTable>
   </div>
 </template>
@@ -90,7 +83,7 @@ export default {
 
     cargarRetiradas();
 
-       const generarReciboLocal = (retirada) => {
+    const generarReciboLocal = (retirada) => {
       const datos = {
         nombre: retirada.nombre,
         nif: retirada.nif,
