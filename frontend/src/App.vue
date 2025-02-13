@@ -82,7 +82,7 @@ export default {
 
 /* Header */
 .header {
-  background-color: #007bff;
+  background-color: green;
   color: white;
   padding: 1rem 2rem;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -116,7 +116,8 @@ export default {
 }
 
 .nav-link:hover {
-  color: #ffcc00; /* Cambio de color al pasar el ratón */
+  color: #ffcc00;
+  /* Cambio de color al pasar el ratón */
 }
 
 /* Main Content */
@@ -131,7 +132,7 @@ export default {
 
 /* Footer */
 .footer {
-  background-color: #007bff;
+  background-color: green;
   color: white;
   padding: 1rem;
   text-align: center;

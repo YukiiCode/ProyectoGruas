@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
@@ -38,5 +39,14 @@ class AuthController extends Controller
             // Capturar cualquier excepción y devolver un mensaje de error
             return response()->json(['error' => $e->getMessage()], 500);
         }
+    }
+
+    public function logout(Request $request)
+    {
+        Auth::logout(); // Cerrar sesión del usuario
+        $request->session()->invalidate(); // Invalidar la sesión
+        $request->session()->regenerateToken(); // Regenerar el token CSRF
+
+        return response()->json(['message' => 'Sesión cerrada correctamente'], 200);
     }
 }
