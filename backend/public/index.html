@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gestión de Grúas</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://unpkg.com/primevue@3/core/core.min.js"></script>
+    <script src="https://unpkg.com/primevue@3/datatable/datatable.min.js"></script>
+    <link href="https://unpkg.com/primevue@3/resources/themes/lara-light-blue/theme.css" rel="stylesheet">
+    <link href="https://unpkg.com/primeicons/primeicons.css" rel="stylesheet">
+    <link href="/css/styles.css" rel="stylesheet">
+</head>
+<body>
+    <div id="app">
+        <component :is="currentView"></component>
+    </div>
+
+    <script src="/js/views/Login.js"></script>
+    <script src="/js/views/Vehiculos.js"></script>
+    <script src="/js/views/Retiradas.js"></script>
+    <script src="/js/app.js"></script>
+</body>
+</html>
