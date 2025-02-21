@@ -11,7 +11,7 @@
 
     <!-- DataTable de Vehículos -->
     <DataTable :value="vehiculosFiltrados" :paginator="true" :rows="10"
-      paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink " responsiveLayout="scroll"
+      paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink" responsiveLayout="scroll"
       class="custom-table mt-4">
       <template #header>
         <h3>Vehículos Registrados</h3>
@@ -27,7 +27,7 @@
       <Column field="modelo" header="Modelo" sortable></Column>
       <Column field="color" header="Color"></Column>
       <Column field="tipovehiculo" header="Tipo de Vehículo"></Column>
-      <Column field="estado" header="Estado"></Column>
+      <Column field="estado" header="Estado" sortable></Column>
     </DataTable>
   </div>
 </template>
