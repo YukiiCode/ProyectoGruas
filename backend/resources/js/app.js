@@ -15,7 +15,7 @@ const router = createRouter({
     routes: [
         { path: '/', redirect: '/login' },
         { path: '/login', component: () => import('./components/Login.vue') },
-        { path: '/vehiculos', component: () => import('./components/Vehiculos.vue') },
+        { path: '/vehiculos', component: () => import('./components/VehiculosView.vue')},
         { path: '/retiradas', component: () => import('./components/Retiradas.vue') },
         { path: '/nueva-retirada', component: () => import('./components/NuevaRetirada.vue') },
         { path: '/users', component: () => import('./components/Users.vue') }
