@@ -1,5 +1,8 @@
 {
   "dependencies": {
-    "jspdf": "^2.5.2"
+    "jspdf": "^2.5.2",
+    "primeicons": "^7.0.0",
+    "primevue": "^4.2.5",
+    "vue-router": "^4.5.0"
   }
 }
