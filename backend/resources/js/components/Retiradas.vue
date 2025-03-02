@@ -36,7 +36,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="retirada in retiradasFiltradas" :key="retirada.id">
+          <tr v-for="retirada in paginatedRetiradas" :key="retirada.id">
             <td>{{ retirada.vehiculo_id }}</td>
             <td>{{ retirada.nombre }}</td>
             <td><span class="nif-badge">{{ retirada.nif }}</span></td>
@@ -60,6 +60,33 @@
       <div v-if="retiradasFiltradas.length === 0" class="no-results">
         <i class="pi pi-exclamation-circle"></i>
         <p>No se encontraron retiradas{{ filtro ? ' con el criterio "' + filtro + '"' : '' }}</p>
+      </div>
+      <div class="pagination" v-if="totalPages >= 1">
+        <button 
+          class="pagination-button" 
+          :disabled="currentPage === 1" 
+          @click="changePage(currentPage - 1)"
+        >
+          <i class="pi pi-chevron-left"></i>
+        </button>
+        <div class="page-numbers">
+          <button 
+            v-for="page in totalPages" 
+            :key="page" 
+            class="pagination-button" 
+            :class="{ active: currentPage === page }" 
+            @click="changePage(page)"
+          >
+            {{ page }}
+          </button>
+        </div>
+        <button 
+          class="pagination-button" 
+          :disabled="currentPage === totalPages" 
+          @click="changePage(currentPage + 1)"
+        >
+          <i class="pi pi-chevron-right"></i>
+        </button>
       </div>
     </div>
     <div v-else class="loading-container">
@@ -87,7 +114,9 @@ export default {
       retiradas: [],
       filtro: '',
       loading: false,
-      showRetiradaForm: false
+      showRetiradaForm: false,
+      currentPage: 1,
+      itemsPerPage: 10
     }
   },
   computed: {
@@ -97,6 +126,14 @@ export default {
         retirada.nif.toLowerCase().includes(this.filtro.toLowerCase()) ||
         retirada.nombre.toLowerCase().includes(this.filtro.toLowerCase())
       );
+    },
+    totalPages() {
+      return Math.ceil(this.retiradasFiltradas.length / this.itemsPerPage);
+    },
+    paginatedRetiradas() {
+      const start = (this.currentPage - 1) * this.itemsPerPage;
+      const end = start + this.itemsPerPage;
+      return this.retiradasFiltradas.slice(start, end);
     }
   },
   mounted() {
@@ -534,5 +571,45 @@ export default {
 .no-results p {
   font-size: 1rem;
   margin: 0;
+}
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 0.75rem;
+  padding: 0.3rem;
+}
+
+.page-numbers {
+  display: flex;
+  justify-content: center;
+  margin: 0 0.3rem;
+}
+
+.pagination-button {
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  color: #495057;
+  padding: 0.25rem 0.5rem;
+  margin: 0 0.15rem;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.85rem;
+}
+
+.pagination-button:hover {
+  background-color: #e9ecef;
+}
+
+.pagination-button.active {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  color: white;
+}
+
+.pagination-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 </style>

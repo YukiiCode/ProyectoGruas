@@ -13,7 +13,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="vehiculo in vehiculos" :key="vehiculo.id">
+        <tr v-for="vehiculo in paginatedVehiculos" :key="vehiculo.id">
           <td><span class="matricula-badge">{{ vehiculo.matricula }}</span></td>
           <td>{{ vehiculo.marca }}</td>
           <td>{{ vehiculo.modelo }}</td>
@@ -38,6 +38,33 @@
         </tr>
       </tbody>
     </table>
+    <div class="pagination" v-if="totalPages >= 1">
+      <button 
+        class="pagination-button" 
+        :disabled="currentPage === 1" 
+        @click="changePage(currentPage - 1)"
+      >
+        <i class="pi pi-chevron-left"></i>
+      </button>
+      <div class="page-numbers">
+        <button 
+          v-for="page in totalPages" 
+          :key="page" 
+          class="pagination-button" 
+          :class="{ active: currentPage === page }" 
+          @click="changePage(page)"
+        >
+          {{ page }}
+        </button>
+      </div>
+      <button 
+        class="pagination-button" 
+        :disabled="currentPage === totalPages" 
+        @click="changePage(currentPage + 1)"
+      >
+        <i class="pi pi-chevron-right"></i>
+      </button>
+    </div>
   </div>
 </template>
 
@@ -53,6 +80,8 @@ export default {
   emits: ['edit', 'delete'],
   data() {
     return {
+      currentPage: 1,
+      itemsPerPage: 10,
       tiposVehiculo: {
         'Motocicleta_aperos_motocarros_y_similares': 'Motocicleta, aperos, motocarros y similares',
         'Turismo_hasta_12cv': 'Turismo hasta 12 cv ó Remolques hasta 750 kg',
@@ -85,6 +114,27 @@ export default {
     },
     getColorHexValue(colorName) {
       return this.coloresMap[colorName] || '#FFFFFF'; // Default to white if color not found
+    }
+  },
+  computed: {
+    totalPages() {
+      return Math.ceil(this.vehiculos.length / this.itemsPerPage);
+    },
+    paginatedVehiculos() {
+      const start = (this.currentPage - 1) * this.itemsPerPage;
+      const end = start + this.itemsPerPage;
+      return this.vehiculos.slice(start, end);
+    }
+  },
+  methods: {
+    getTipoVehiculoDisplay(tipo) {
+      return this.tiposVehiculo[tipo] || tipo;
+    },
+    getColorHexValue(colorName) {
+      return this.coloresMap[colorName] || '#FFFFFF';
+    },
+    changePage(page) {
+      this.currentPage = page;
     }
   }
 };
@@ -194,5 +244,46 @@ export default {
 
 .btn-action:hover {
   opacity: 0.8;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 0.75rem;
+  padding: 0.3rem;
+}
+
+.page-numbers {
+  display: flex;
+  justify-content: center;
+  margin: 0 0.3rem;
+}
+
+.pagination-button {
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  color: #495057;
+  padding: 0.25rem 0.5rem;
+  margin: 0 0.15rem;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.85rem;
+}
+
+.pagination-button:hover {
+  background-color: #e9ecef;
+}
+
+.pagination-button.active {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  color: white;
+}
+
+.pagination-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 </style>

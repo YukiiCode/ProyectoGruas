@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
+use App\Services\LogService;
 
 class UserController extends Controller
 {
@@ -46,6 +47,9 @@ class UserController extends Controller
                 'password' => Hash::make($request->password),
                 'rol' => $request->rol,
             ]);
+
+            // Log user creation
+            LogService::registrarCreacion('usuario', $user->id, $request->except('password'));
 
             return response()->json($user, 201);
         } catch (\Exception $e) {
@@ -103,7 +107,11 @@ class UserController extends Controller
                 $user->rol = $request->rol;
             }
 
+            $datosAnteriores = $user->toArray();
             $user->save();
+
+            // Log user update
+            LogService::registrarActualizacion('usuario', $user->id, $datosAnteriores, $request->except('password'));
 
             return response()->json($user, 200);
         } catch (\Exception $e) {
@@ -120,7 +128,12 @@ class UserController extends Controller
             }
             
             $user = User::findOrFail($id);
+            $datosEliminados = $user->toArray();
             $user->delete();
+
+            // Log user deletion
+            LogService::registrarEliminacion('usuario', $id, $datosEliminados);
+
             return response()->json(['message' => 'User deleted successfully'], 200);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Error deleting user: ' . $e->getMessage()], 500);

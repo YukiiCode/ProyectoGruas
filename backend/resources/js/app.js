@@ -40,6 +40,11 @@ const router = createRouter({
             meta: { requiresAuth: true } 
         },
         { 
+            path: '/logs', 
+            component: () => import('./components/Logs.vue'),
+            meta: { requiresAuth: true } 
+        },
+        { 
             path: '/', 
             redirect: '/home' 
         }
@@ -49,23 +54,30 @@ const router = createRouter({
 // Navigation guards
 router.beforeEach((to, from, next) => {
     const token = localStorage.getItem('token');
-    const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
-    
-    if (requiresAuth && !token) {
-        next('/login');
-    } else if (to.path === '/login' && token) {
+    const userRole = localStorage.getItem('userRole');
+
+    // Redirect authenticated users away from login page
+    if (to.path === '/login' && token) {
         next('/home');
-    } else {
-        next();
+        return;
     }
+
+    // Redirect unauthenticated users to login
+    if (to.meta.requiresAuth && !token) {
+        next('/login');
+        return;
+    }
+
+    // Check for admin-only routes
+    if (to.path === '/users' && (!userRole || userRole !== 'admin')) {
+        next('/home');
+        return;
+    }
+
+    next();
 });
 
-// Crear la aplicación Vue
 const app = createApp(App);
-
-// Registrar plugins
 app.use(router);
 app.use(PrimeVue);
-
-// Montar la aplicación
 app.mount('#app');

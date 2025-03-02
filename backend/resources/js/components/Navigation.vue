@@ -4,13 +4,17 @@
       <h1>Sistema de Grúas</h1>
     </div>
     <div class="nav-links">
-      <router-link to="/dashboard" class="nav-item">
+      <router-link to="/home" class="nav-item">
         <i class="pi pi-home"></i>
         <span>Dashboard</span>
       </router-link>
       <router-link v-if="isAdmin" to="/users" class="nav-item">
         <i class="pi pi-users"></i>
         <span>Usuarios</span>
+      </router-link>
+      <router-link v-if="isAdmin" to="/logs" class="nav-item">
+        <i class="pi pi-list"></i>
+        <span>Logs</span>
       </router-link>
       <router-link to="/vehiculos" class="nav-item">
         <i class="pi pi-car"></i>
@@ -24,7 +28,7 @@
     <div class="nav-user">
       <button @click="logout" class="btn-logout">
         <i class="pi pi-sign-out"></i>
-        <span>Cerrar Sesión</span>
+        <span>{{ logoutButtonText }}</span>
       </button>
     </div>
   </nav>
@@ -35,10 +39,38 @@ export default {
   name: 'Navigation',
   data() {
     return {
-      isAdmin: localStorage.getItem('userRole') === 'admin'
+      isAdmin: false
     }
   },
+  computed: {
+    isAuthenticated() {
+      return this.$parent.isAuthenticated;
+    },
+    logoutButtonText() {
+      return this.isAuthenticated ? 'Cerrar Sesión' : 'Iniciar Sesión';
+    }
+  },
+  watch: {
+    '$route': {
+      immediate: true,
+      handler() {
+        this.checkUserRole();
+      }
+    }
+  },
+  created() {
+    this.checkUserRole();
+    window.addEventListener('storage', this.handleStorageChange);
+  },
+  beforeDestroy() {
+    window.removeEventListener('storage', this.handleStorageChange);
+  },
   methods: {
+    handleStorageChange(event) {
+      if (event.key === 'token' || event.key === 'userRole') {
+        this.checkUserRole();
+      }
+    },
     async logout() {
       const token = localStorage.getItem('token');
       if (!token) {
@@ -59,6 +91,7 @@ export default {
         localStorage.removeItem('token');
         localStorage.removeItem('userRole');
         this.isAdmin = false;
+        this.$parent.isAuthenticated = false;
         this.$router.push('/login');
       } catch (error) {
         console.error('Error during logout:', error);
@@ -66,8 +99,11 @@ export default {
     },
     async checkUserRole() {
       const token = localStorage.getItem('token');
+      const storedRole = localStorage.getItem('userRole');
+      
       if (!token) {
         this.isAdmin = false;
+        this.$parent.isAuthenticated = false;
         localStorage.removeItem('userRole');
         return;
       }
@@ -84,14 +120,20 @@ export default {
           const userData = await response.json();
           const userRole = userData.rol;
           this.isAdmin = userRole && userRole.toLowerCase() === 'admin';
-          localStorage.setItem('userRole', userRole ? userRole.toLowerCase() : '');
+          this.$parent.isAuthenticated = true;
+          if (userRole) {
+            localStorage.setItem('userRole', userRole.toLowerCase());
+            console.log('Current user role:', userRole.toLowerCase());
+          }
         } else {
           this.isAdmin = false;
+          this.$parent.isAuthenticated = false;
           localStorage.removeItem('userRole');
         }
       } catch (error) {
         console.error('Error checking user role:', error);
         this.isAdmin = false;
+        this.$parent.isAuthenticated = false;
         localStorage.removeItem('userRole');
       }
     }

@@ -542,17 +542,43 @@ export default {
 
       // Preparar datos para guardar
       const retiradaData = {
-        ...this.formData,
         vehiculo_id: this.selectedVehiculo.id,
-
+        fecha: this.formData.fecha,
+        nombre: this.formData.nombre,
+        nif: this.formData.nif,
+        domicilio: this.formData.domicilio,
+        poblacion: this.formData.poblacion,
+        provincia: this.formData.provincia,
+        permiso: this.formData.permiso,
+        agente: this.formData.agente,
+        importeretirada: this.formData.importeretirada,
+        importedeposito: this.formData.importedeposito,
+        total: this.formData.total,
+        opcionespago: this.formData.opcionespago,
       };
-
-      // Actualizar el estado del vehículo a "Liquidado"
+      
+      // Crear el objeto vehiculoData solo con los campos necesarios para el backend
       const vehiculoData = {
-        ...this.selectedVehiculo,
-        estado: 'Liquidado',
-        fechasalida: new Date()
+        id: this.selectedVehiculo.id,
+        fechaentrada: this.selectedVehiculo.fechaentrada,
+        fechasalida: new Date(),
+        lugar: this.selectedVehiculo.lugar || '',
+        direccion: this.selectedVehiculo.direccion || '',
+        agente: this.selectedVehiculo.agente || this.formData.agente,
+        matricula: this.selectedVehiculo.matricula,
+        marca: this.selectedVehiculo.marca,
+        modelo: this.selectedVehiculo.modelo,
+        color: this.selectedVehiculo.color,
+        tipovehiculo: this.selectedVehiculo.tipovehiculo,
+        estado: 'Retirado',
+        motivo: this.selectedVehiculo.motivo || '',
+        grua: this.selectedVehiculo.grua || ''
       };
+      
+      // Guardamos las observaciones en el vehículo si existen
+      if (this.selectedVehiculo.observaciones) {
+        vehiculoData.observaciones = this.selectedVehiculo.observaciones;
+      }
 
       this.guardarRetirada(retiradaData, vehiculoData);
     },

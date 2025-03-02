@@ -46,6 +46,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
     
     // Tarifas routes
     Route::get('/tarifas', [TarifasController::class, 'index']);
+    
+    // Logs routes
+    Route::get('/logs', [\App\Http\Controllers\Api\LogController::class, 'index']);
 });
 
 

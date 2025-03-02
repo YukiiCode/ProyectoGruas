@@ -1,9 +1,9 @@
 <template>
   <div class="vehiculos-container">
     <div class="page-header">
-      <div class="header-content">
-        <h2><i class="pi pi-car"></i>Gestión de Vehículos</h2>
-        <button class="btn-add" @click="openDialog()">
+      <h2><i class="pi pi-car"></i>Gestión de Vehículos</h2>
+      <div class="header-actions">
+        <button @click="openDialog()" class="btn btn-primary">
           <i class="pi pi-plus"></i>
           Nuevo Vehículo
         </button>

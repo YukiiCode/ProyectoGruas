@@ -10,33 +10,17 @@
             <label for="usuario">Usuario</label>
             <div class="input-container">
               <i class="pi pi-user"></i>
-              <input 
-                id="usuario" 
-                v-model="usuario" 
-                type="text" 
-                required 
-                placeholder="Ingrese su usuario"
-                class="form-control"
-              />
+              <input id="usuario" v-model="usuario" type="text" required placeholder="Ingrese su usuario"
+                class="form-control" />
             </div>
           </div>
           <div class="form-group">
             <label for="password">Contraseña</label>
             <div class="input-container">
               <i class="pi pi-lock"></i>
-              <input 
-                id="password" 
-                v-model="password" 
-                :type="showPassword ? 'text' : 'password'" 
-                required 
-                placeholder="Ingrese su contraseña"
-                class="form-control"
-              />
-              <button 
-                type="button" 
-                class="toggle-password"
-                @click="showPassword = !showPassword"
-              >
+              <input id="password" v-model="password" :type="showPassword ? 'text' : 'password'" required
+                placeholder="Ingrese su contraseña" class="form-control" />
+              <button type="button" class="toggle-password" @click="showPassword = !showPassword">
                 <i :class="showPassword ? 'pi pi-eye-slash' : 'pi pi-eye'"></i>
               </button>
             </div>
@@ -90,17 +74,32 @@ export default {
 
         const data = await response.json();
         localStorage.setItem('token', data.token);
-        // Set the auth token for axios requests
-        setAuthToken(data.token);
-        this.$parent.isAuthenticated = true;
-        this.$router.push('/home');
-      } catch (err) {
-        console.error('Login error:', err);
-        this.error = 'Credenciales incorrectas';
+        // Store user role after successful login
+        const userResponse = await fetch('http://localhost:8000/api/user', {
+          headers: {
+            'Authorization': `Bearer ${data.token}`,
+            'Accept': 'application/json'
+          }
+        });
+
+        if (userResponse.ok) {
+          const userData = await userResponse.json();
+          const userRole = userData.rol;
+          localStorage.setItem('userRole', userRole ? userRole.toLowerCase() : '');
+          console.log(`Usuario logueado como: ${userRole ? userRole.toUpperCase() : 'Usuario normal'}`);
+          this.$parent.isAuthenticated = true;
+          this.$router.push('/home');
+        }
+        else {
+          throw new Error('Failed to fetch user data');
+        }
+      } catch (error) {
+        console.error('Login error:', error);
+        this.error = error.message || 'Error al iniciar sesión';
       }
     }
   }
-}
+};
 </script>
 
 <style scoped>

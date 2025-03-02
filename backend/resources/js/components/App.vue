@@ -1,38 +1,24 @@
 <template>
   <div id="app">
-    <!-- Encabezado -->
-    <header class="header">
-      <div class="header-content">
-        <h1>Sistema de Gestión de Retiradas de Vehículos</h1>
-        <nav>
-          <ul class="nav-links">
-            <li v-if="!isAuthenticated">
-              <router-link to="/login">Iniciar Sesión</router-link>
-            </li>
-            <li v-if="isAuthenticated">
-              <router-link to="/vehiculos">Gestión de Vehículos</router-link>
-            </li>
-            <li v-if="isAuthenticated">
-              <router-link to="/retiradas">Gestión de Retiradas</router-link>
-            </li>
-            <li v-if="isAuthenticated">
-              <a href="#" @click="logout">Cerrar Sesión</a>
-            </li>
-          </ul>
-        </nav>
-      </div>
-    </header>
-
+    <Navigation v-if="isAuthenticated" />
     <!-- Contenido principal -->
     <main>
       <router-view></router-view>
     </main>
+    <Footer />
   </div>
 </template>
 
 <script>
+import Navigation from './Navigation.vue';
+import Footer from './Footer.vue';
+
 export default {
   name: 'App',
+  components: {
+    Navigation,
+    Footer
+  },
   data() {
     return {
       isAuthenticated: false,
@@ -52,6 +38,7 @@ export default {
           }
         });
         localStorage.removeItem('token');
+        localStorage.removeItem('userRole');
         this.isAuthenticated = false;
         this.$router.push('/login');
       } catch (error) {
@@ -70,20 +57,27 @@ export default {
           });
           
           if (response.ok) {
+            const userData = await response.json();
             this.isAuthenticated = true;
+            // Store user role in localStorage
+            localStorage.setItem('userRole', userData.rol ? userData.rol.toLowerCase() : '');
           } else {
             localStorage.removeItem('token');
+            localStorage.removeItem('userRole');
             this.isAuthenticated = false;
             this.$router.push('/login');
           }
         } catch (error) {
           console.error('Auth check error:', error);
+          localStorage.removeItem('token');
+          localStorage.removeItem('userRole');
           this.isAuthenticated = false;
           if (this.$route.path !== '/login') {
             this.$router.push('/login');
           }
         }
       } else {
+        localStorage.removeItem('userRole');
         this.isAuthenticated = false;
         if (this.$route.path !== '/login') {
           this.$router.push('/login');
@@ -93,22 +87,19 @@ export default {
   },
   created() {
     this.checkAuth();
-    window.addEventListener('storage', this.checkAuth);
-  },
-  beforeDestroy() {
-    window.removeEventListener('storage', this.checkAuth);
   },
   watch: {
-    $route(to, from) {
-      // Only check authentication when navigating to or from login page
-      // or when the route requires authentication but user isn't authenticated
-      if (to.path === '/login' || from.path === '/login' || 
-          (!this.isAuthenticated && to.path !== '/login')) {
+    $route: {
+      immediate: true,
+      handler(to, from) {
+        // Check authentication on every route change
         this.checkAuth();
+        this._initialAuthCheck = false;
+        this._forceAuthCheck = false;
       }
     }
   }
-}
+};
 </script>
 
 <style>

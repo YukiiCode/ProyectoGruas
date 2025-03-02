@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Vehiculo;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
+use App\Services\LogService;
 
 class VehiculoController extends Controller
 {
@@ -43,6 +44,10 @@ class VehiculoController extends Controller
             }
 
             $vehiculo = Vehiculo::create($request->all());
+            
+            // Log vehicle creation
+            LogService::registrarCreacion('vehiculo', $vehiculo->id, $request->all());
+            
             return response()->json($vehiculo, 201);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Error creating vehicle: ' . $e->getMessage()], 500);
@@ -109,7 +114,12 @@ class VehiculoController extends Controller
                 }
             }
 
+            $datosAnteriores = $vehiculo->toArray();
             $vehiculo->update($fillableData);
+            
+            // Log vehicle update
+            LogService::registrarActualizacion('vehiculo', $vehiculo->id, $datosAnteriores, $fillableData);
+            
             return response()->json($vehiculo, 200);
         } catch (\Exception $e) {
             // Log the actual error for debugging
@@ -121,7 +131,12 @@ class VehiculoController extends Controller
     {
         try {
             $vehiculo = Vehiculo::findOrFail($id);
+            $datosEliminados = $vehiculo->toArray();
             $vehiculo->delete();
+            
+            // Log vehicle deletion
+            LogService::registrarEliminacion('vehiculo', $id, $datosEliminados);
+            
             return response()->json(['message' => 'Vehicle deleted successfully'], 200);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Error deleting vehicle'], 500);

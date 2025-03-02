@@ -213,8 +213,13 @@ export default {
           }
         });
         
+        // Format the date to YYYY-MM-DD before sending
+        const fecha = new Date(this.retirada.fecha);
+        const formattedFecha = fecha.toISOString().split('T')[0];
+        
         const retiradaData = {
           ...this.retirada,
+          fecha: formattedFecha,
           vehiculo_id: vehiculoResponse.data.id
         };
         await axios.post('/api/retiradas', retiradaData, {

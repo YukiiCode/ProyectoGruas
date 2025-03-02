@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Retirada;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use App\Services\LogService;
 
 class RetiradaController extends Controller
 {
@@ -24,11 +25,19 @@ class RetiradaController extends Controller
         try {
             $validator = Validator::make($request->all(), [
                 'vehiculo_id' => 'required|exists:vehiculos,id',
-                'fecha_retirada' => 'required|date',
-                'lugar_retirada' => 'required|string',
-                'motivo' => 'required|string',
-                'observaciones' => 'nullable|string',
-                'estado' => 'required|string|in:pendiente,en_proceso,completada,cancelada'
+                'nombre' => 'required|string|min:3',
+                'nif' => 'required|string',
+                'domicilio' => 'required|string|min:5',
+                'poblacion' => 'required|string|min:2',
+                'provincia' => 'required|string|min:2',
+                'permiso' => 'required|string',
+                'fecha' => 'required|date',
+                'agente' => 'required|string',
+                'importeretirada' => 'required|numeric',
+                'importedeposito' => 'required|numeric',
+                'total' => 'required|numeric',
+                'opcionespago' => 'required|string',
+                'observaciones' => 'nullable|string'
             ]);
 
             if ($validator->fails()) {
@@ -36,9 +45,13 @@ class RetiradaController extends Controller
             }
 
             $retirada = Retirada::create($request->all());
+            
+            // Log retirada creation
+            LogService::registrarCreacion('retirada', $retirada->id, $request->all());
+            
             return response()->json($retirada, 201);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Error creating retirada'], 500);
+            return response()->json(['error' => 'Error creating retirada: ' . $e->getMessage()], 500);
         }
     }
 
@@ -49,18 +62,19 @@ class RetiradaController extends Controller
 
             $validator = Validator::make($request->all(), [
                 'vehiculo_id' => 'sometimes|required|exists:vehiculos,id',
-                'fecha_retirada' => 'sometimes|required|date',
-                'lugar_retirada' => 'sometimes|required|string',
-                'motivo' => 'sometimes|required|string',
-                'observaciones' => 'nullable|string',
-                'estado' => 'sometimes|required|string|in:pendiente,en_proceso,completada,cancelada'
+                'fecha' => 'sometimes|required|date'
             ]);
 
             if ($validator->fails()) {
                 return response()->json(['errors' => $validator->errors()], 422);
             }
 
+            $datosAnteriores = $retirada->toArray();
             $retirada->update($request->all());
+            
+            // Log retirada update
+            LogService::registrarActualizacion('retirada', $retirada->id, $datosAnteriores, $request->all());
+            
             return response()->json($retirada, 200);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Error updating retirada'], 500);
@@ -71,7 +85,12 @@ class RetiradaController extends Controller
     {
         try {
             $retirada = Retirada::findOrFail($id);
+            $datosEliminados = $retirada->toArray();
             $retirada->delete();
+            
+            // Log retirada deletion
+            LogService::registrarEliminacion('retirada', $id, $datosEliminados);
+            
             return response()->json(['message' => 'Retirada deleted successfully'], 200);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Error deleting retirada'], 500);

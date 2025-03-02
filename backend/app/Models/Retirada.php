@@ -6,28 +6,36 @@ use Illuminate\Database\Eloquent\Model;
 
 class Retirada extends Model
 {
-    protected $table = 'retiradas'; // Especifica la tabla personalizada
+    protected $table = 'retiradas';
 
     protected $fillable = [
         'vehiculo_id',
+        'fecha',
         'nombre',
         'nif',
         'domicilio',
         'poblacion',
         'provincia',
         'permiso',
-        'fecha',
         'agente',
         'importeretirada',
         'importedeposito',
         'total',
         'opcionespago',
-        'grua'
+        'grua',
+    ];
+    
+    public $timestamps = false;
+    
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array
+     */
+    protected $casts = [
+        'fecha' => 'date',
     ];
 
-    /**
-     * Get the vehicle associated with the retirada.
-     */
     public function vehiculo()
     {
         return $this->belongsTo(Vehiculo::class, 'vehiculo_id');

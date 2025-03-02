@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use App\Services\LogService;
 
 class AuthController extends Controller
 {
@@ -23,11 +24,16 @@ class AuthController extends Controller
 
             // Verificar si el usuario existe y la contraseña es correcta
             if (!$user || !Hash::check($request->password, $user->password)) {
+                // Registrar intento de inicio de sesión fallido
+                LogService::registrar('login_fallido', ['usuario' => $request->usuario, 'ip' => $request->ip()]);
                 return response()->json(['error' => 'Credenciales incorrectas'], 401);
             }
 
             // Generar un token para el usuario
             $token = $user->createToken('auth_token')->plainTextToken;
+
+            // Registrar inicio de sesión exitoso
+            LogService::registrarLogin($user->id, ['ip' => $request->ip()]);
 
             // Devolver una respuesta exitosa
             return response()->json([
@@ -43,6 +49,9 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
+        // Registrar cierre de sesión
+        LogService::registrarLogout(['ip' => $request->ip()]);
+        
         // Revocar el token actual del usuario
         $request->user()->currentAccessToken()->delete();
         

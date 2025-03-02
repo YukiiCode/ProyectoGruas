@@ -19,6 +19,31 @@
           />
         </div>
       </div>
+
+      <!-- Modal de confirmación para eliminar usuario -->
+      <div class="modal-content" v-if="showDeleteModal">
+        <h3>Eliminar Usuario</h3>
+        <p>¿Está seguro que desea eliminar al usuario <strong>{{ userToDelete?.nombre }}</strong>?</p>
+        <p class="warning-text">Esta acción no se puede deshacer.</p>
+        <div class="form-actions">
+          <button @click="deleteUser()" class="btn btn-danger">
+            <i class="pi pi-trash"></i>
+            Eliminar
+          </button>
+          <button type="button" class="btn btn-secondary" @click="closeModal">
+            <i class="pi pi-times"></i>
+            Cancelar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading spinner -->
+    <div class="loading-container" v-if="loading">
+      <div class="loading-spinner">
+        <i class="pi pi-spin pi-spinner"></i>
+        <span>Cargando usuarios...</span>
+      </div>
     </div>
 
     <div class="table-container" v-if="!loading">
@@ -26,38 +51,61 @@
         <thead>
           <tr>
             <th>Nombre</th>
-            <th>Email</th>
+            <th>Usuario</th>
             <th>Rol</th>
-            <th>Estado</th>
             <th>Acciones</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="user in usuariosFiltrados" :key="user.id">
+          <tr v-for="user in paginatedUsuarios" :key="user.id">
             <td>{{ user.nombre }}</td>
             <td>{{ user.usuario }}</td>
             <td><span class="role-badge">{{ user.rol }}</span></td>
             <td>
-              <span :class="['status-badge', user.active ? 'status-active' : 'status-inactive']">
-                {{ user.active ? 'Activo' : 'Inactivo' }}
-              </span>
-            </td>
-            <td>
               <button @click="editUser(user)" class="btn btn-icon btn-edit">
                 <i class="pi pi-pencil"></i>
               </button>
-              <button @click="toggleUserStatus(user)" class="btn btn-icon" :class="user.active ? 'btn-danger' : 'btn-success'">
-                <i class="pi" :class="user.active ? 'pi-times' : 'pi-check'"></i>
+              <button @click="confirmDelete(user)" class="btn btn-icon btn-danger">
+                <i class="pi pi-trash"></i>
               </button>
             </td>
           </tr>
         </tbody>
       </table>
+      <div v-if="usuariosFiltrados.length === 0" class="no-results">
+        <i class="pi pi-exclamation-circle"></i>
+        <p>No se encontraron usuarios{{ filtro ? ' con el criterio "' + filtro + '"' : '' }}</p>
+      </div>
+      <div class="pagination" v-if="totalPages >= 1">
+        <button 
+          class="pagination-button" 
+          :disabled="currentPage === 1" 
+          @click="currentPage--"
+        >
+          <i class="pi pi-chevron-left"></i>
+        </button>
+        <button 
+          v-for="page in totalPages" 
+          :key="page" 
+          class="pagination-button" 
+          :class="{ active: currentPage === page }" 
+          @click="currentPage = page"
+        >
+          {{ page }}
+        </button>
+        <button 
+          class="pagination-button" 
+          :disabled="currentPage === totalPages" 
+          @click="currentPage++"
+        >
+          <i class="pi pi-chevron-right"></i>
+        </button>
+      </div>
     </div>
 
     <!-- Modal para crear/editar usuario -->
-    <div class="modal" v-if="showCreateModal || showEditModal">
-      <div class="modal-content">
+    <div class="modal" v-if="showCreateModal || showEditModal || showDeleteModal">
+      <div class="modal-content" v-if="showCreateModal || showEditModal">
         <h3>{{ showEditModal ? 'Editar Usuario' : 'Nuevo Usuario' }}</h3>
         <form @submit.prevent="handleSubmit" class="user-form">
           <div class="form-group">
@@ -118,6 +166,23 @@
           </div>
         </form>
       </div>
+
+      <!-- Modal de confirmación para eliminar usuario -->
+      <div class="modal-content" v-if="showDeleteModal">
+        <h3>Eliminar Usuario</h3>
+        <p>¿Está seguro que desea eliminar al usuario <strong>{{ userToDelete?.nombre }}</strong>?</p>
+        <p class="warning-text">Esta acción no se puede deshacer.</p>
+        <div class="form-actions">
+          <button @click="deleteUser()" class="btn btn-danger">
+            <i class="pi pi-trash"></i>
+            Eliminar
+          </button>
+          <button type="button" class="btn btn-secondary" @click="closeModal">
+            <i class="pi pi-times"></i>
+            Cancelar
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -134,6 +199,10 @@ export default {
       loading: false,
       showCreateModal: false,
       showEditModal: false,
+      showDeleteModal: false,
+      userToDelete: null,
+      currentPage: 1,
+      itemsPerPage: 10,
       formData: {
         nombre: '',
         usuario: '',
@@ -148,6 +217,14 @@ export default {
         user.nombre.toLowerCase().includes(this.filtro.toLowerCase()) ||
         user.usuario.toLowerCase().includes(this.filtro.toLowerCase())
       );
+    },
+    totalPages() {
+      return Math.ceil(this.usuariosFiltrados.length / this.itemsPerPage);
+    },
+    paginatedUsuarios() {
+      const start = (this.currentPage - 1) * this.itemsPerPage;
+      const end = start + this.itemsPerPage;
+      return this.usuariosFiltrados.slice(start, end);
     }
   },
   mounted() {
@@ -169,12 +246,17 @@ export default {
       this.formData = { ...user };
       this.showEditModal = true;
     },
-    async toggleUserStatus(user) {
+    confirmDelete(user) {
+      this.userToDelete = user;
+      this.showDeleteModal = true;
+    },
+    async deleteUser() {
       try {
-        await axios.patch(`/api/users/${user.id}/toggle-status`);
+        await axios.delete(`/api/users/${this.userToDelete.id}`);
+        this.closeModal();
         await this.loadUsers();
       } catch (error) {
-        console.error('Error al cambiar estado del usuario:', error);
+        console.error('Error al eliminar usuario:', error);
       }
     },
     async handleSubmit() {
@@ -193,6 +275,8 @@ export default {
     closeModal() {
       this.showCreateModal = false;
       this.showEditModal = false;
+      this.showDeleteModal = false;
+      this.userToDelete = null;
       this.formData = {
         nombre: '',
         usuario: '',
@@ -224,6 +308,33 @@ export default {
   overflow: hidden;
 }
 
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+}
+
+.loading-spinner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.loading-spinner i {
+  font-size: 2.5rem;
+  color: var(--primary-color);
+}
+
+.loading-spinner span {
+  font-size: 1rem;
+  color: #666;
+}
+
 .role-badge {
   background-color: var(--primary-color);
   color: white;
@@ -232,20 +343,15 @@ export default {
   font-size: 0.9em;
 }
 
-.status-badge {
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 0.9em;
-}
-
-.status-active {
-  background-color: #4CAF50;
-  color: white;
-}
-
-.status-inactive {
+.btn-danger {
   background-color: #f44336;
   color: white;
+}
+
+.warning-text {
+  color: #f44336;
+  font-weight: bold;
+  margin-bottom: 1rem;
 }
 
 .btn-icon {
@@ -288,5 +394,49 @@ export default {
   display: flex;
   gap: 1rem;
   justify-content: flex-end;
+}
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 1rem;
+  gap: 0.25rem;
+  padding: 0.5rem;
+}
+
+.pagination-button {
+  min-width: 2rem;
+  height: 2rem;
+  background-color: transparent;
+  border: 1px solid #e2e8f0;
+  color: #64748b;
+  padding: 0.25rem;
+  margin: 0;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pagination-button:hover {
+  background-color: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #475569;
+}
+
+.pagination-button.active {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  color: white;
+  font-weight: 500;
+}
+
+.pagination-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  background-color: #f8fafc;
 }
 </style>
