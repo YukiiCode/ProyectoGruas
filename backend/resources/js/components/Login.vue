@@ -56,6 +56,8 @@
 </template>
 
 <script>
+import { setAuthToken } from '../bootstrap';
+
 export default {
   name: 'Login',
   data() {
@@ -69,7 +71,7 @@ export default {
   methods: {
     async login() {
       try {
-        const response = await fetch('http://localhost:8000/api/login', {
+        const response = await fetch('/api/login', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -88,8 +90,10 @@ export default {
 
         const data = await response.json();
         localStorage.setItem('token', data.token);
-        this.$router.push('/vehiculos');
+        // Set the auth token for axios requests
+        setAuthToken(data.token);
         this.$parent.isAuthenticated = true;
+        this.$router.push('/home');
       } catch (err) {
         console.error('Login error:', err);
         this.error = 'Credenciales incorrectas';

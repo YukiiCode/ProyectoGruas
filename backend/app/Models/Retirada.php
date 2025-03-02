@@ -21,7 +21,15 @@ class Retirada extends Model
         'importeretirada',
         'importedeposito',
         'total',
-        'opcionespago'
+        'opcionespago',
+        'grua'
     ];
 
+    /**
+     * Get the vehicle associated with the retirada.
+     */
+    public function vehiculo()
+    {
+        return $this->belongsTo(Vehiculo::class, 'vehiculo_id');
+    }
 }

@@ -34,9 +34,9 @@
         </thead>
         <tbody>
           <tr v-for="user in usuariosFiltrados" :key="user.id">
-            <td>{{ user.name }}</td>
-            <td>{{ user.email }}</td>
-            <td><span class="role-badge">{{ user.role }}</span></td>
+            <td>{{ user.nombre }}</td>
+            <td>{{ user.usuario }}</td>
+            <td><span class="role-badge">{{ user.rol }}</span></td>
             <td>
               <span :class="['status-badge', user.active ? 'status-active' : 'status-inactive']">
                 {{ user.active ? 'Activo' : 'Inactivo' }}
@@ -61,10 +61,10 @@
         <h3>{{ showEditModal ? 'Editar Usuario' : 'Nuevo Usuario' }}</h3>
         <form @submit.prevent="handleSubmit" class="user-form">
           <div class="form-group">
-            <label for="name">Nombre</label>
+            <label for="nombre">Nombre</label>
             <input
-              id="name"
-              v-model="formData.name"
+              id="nombre"
+              v-model="formData.nombre"
               type="text"
               required
               class="form-control"
@@ -73,14 +73,14 @@
           </div>
 
           <div class="form-group">
-            <label for="email">Email</label>
+            <label for="usuario">Usuario</label>
             <input
-              id="email"
-              v-model="formData.email"
-              type="email"
+              id="usuario"
+              v-model="formData.usuario"
+              type="text"
               required
               class="form-control"
-              placeholder="Email"
+              placeholder="Nombre de usuario"
               :disabled="showEditModal"
             />
           </div>
@@ -98,11 +98,11 @@
           </div>
 
           <div class="form-group">
-            <label for="role">Rol</label>
-            <select id="role" v-model="formData.role" required class="form-control">
+            <label for="rol">Rol</label>
+            <select id="rol" v-model="formData.rol" required class="form-control">
               <option value="">Seleccione un rol</option>
               <option value="admin">Administrador</option>
-              <option value="user">Usuario</option>
+              <option value="operador">Operador</option>
             </select>
           </div>
 
@@ -135,18 +135,18 @@ export default {
       showCreateModal: false,
       showEditModal: false,
       formData: {
-        name: '',
-        email: '',
+        nombre: '',
+        usuario: '',
         password: '',
-        role: ''
+        rol: ''
       }
     };
   },
   computed: {
     usuariosFiltrados() {
       return this.users.filter(user =>
-        user.name.toLowerCase().includes(this.filtro.toLowerCase()) ||
-        user.email.toLowerCase().includes(this.filtro.toLowerCase())
+        user.nombre.toLowerCase().includes(this.filtro.toLowerCase()) ||
+        user.usuario.toLowerCase().includes(this.filtro.toLowerCase())
       );
     }
   },
@@ -194,10 +194,10 @@ export default {
       this.showCreateModal = false;
       this.showEditModal = false;
       this.formData = {
-        name: '',
-        email: '',
+        nombre: '',
+        usuario: '',
         password: '',
-        role: ''
+        rol: ''
       };
     }
   }

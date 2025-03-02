@@ -35,22 +35,78 @@ export default {
   name: 'App',
   data() {
     return {
-      isAuthenticated: false
+      isAuthenticated: false,
+      _initialAuthCheck: true,
+      _forceAuthCheck: false
     }
   },
   methods: {
-    logout() {
-      localStorage.removeItem('token');
-      this.isAuthenticated = false;
-      this.$router.push('/login');
+    async logout() {
+      try {
+        const response = await fetch('http://localhost:8000/api/logout', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          }
+        });
+        localStorage.removeItem('token');
+        this.isAuthenticated = false;
+        this.$router.push('/login');
+      } catch (error) {
+        console.error('Logout error:', error);
+      }
     },
-    checkAuth() {
+    async checkAuth() {
       const token = localStorage.getItem('token');
-      this.isAuthenticated = !!token;
+      if (token) {
+        try {
+          const response = await fetch('http://localhost:8000/api/user', {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Accept': 'application/json'
+            }
+          });
+          
+          if (response.ok) {
+            this.isAuthenticated = true;
+          } else {
+            localStorage.removeItem('token');
+            this.isAuthenticated = false;
+            this.$router.push('/login');
+          }
+        } catch (error) {
+          console.error('Auth check error:', error);
+          this.isAuthenticated = false;
+          if (this.$route.path !== '/login') {
+            this.$router.push('/login');
+          }
+        }
+      } else {
+        this.isAuthenticated = false;
+        if (this.$route.path !== '/login') {
+          this.$router.push('/login');
+        }
+      }
     }
   },
   created() {
     this.checkAuth();
+    window.addEventListener('storage', this.checkAuth);
+  },
+  beforeDestroy() {
+    window.removeEventListener('storage', this.checkAuth);
+  },
+  watch: {
+    $route(to, from) {
+      // Only check authentication when navigating to or from login page
+      // or when the route requires authentication but user isn't authenticated
+      if (to.path === '/login' || from.path === '/login' || 
+          (!this.isAuthenticated && to.path !== '/login')) {
+        this.checkAuth();
+      }
+    }
   }
 }
 </script>

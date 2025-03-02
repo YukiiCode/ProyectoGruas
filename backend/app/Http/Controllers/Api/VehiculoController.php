@@ -23,12 +23,19 @@ class VehiculoController extends Controller
     {
         try {
             $validator = Validator::make($request->all(), [
-                'matricula' => 'required|string|unique:vehiculos',
-                'marca' => 'required|string',
-                'modelo' => 'required|string',
-                'color' => 'nullable|string',
-                'tipovehiculo' => 'required|string',
-                'estado' => 'required|string|in:disponible,retirado,en_proceso'
+                'fechaentrada' => 'nullable|date',
+                'fechasalida' => 'nullable|date',
+                'lugar' => 'nullable|string|max:255',
+                'direccion' => 'nullable|string|max:255',
+                'agente' => 'nullable|string|max:255',
+                'matricula' => 'required|string|max:20',
+                'marca' => 'required|string|max:100',
+                'modelo' => 'required|string|max:100',
+                'color' => 'nullable|string|max:50',
+                'tipovehiculo' => 'required|string|max:255',
+                'estado' => 'required|string|in:En depósito,Retirado|max:50',
+                'motivo' => 'nullable|string',
+                'grua' => 'nullable|string|max:50'
             ]);
 
             if ($validator->fails()) {
@@ -38,7 +45,7 @@ class VehiculoController extends Controller
             $vehiculo = Vehiculo::create($request->all());
             return response()->json($vehiculo, 201);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Error creating vehicle'], 500);
+            return response()->json(['error' => 'Error creating vehicle: ' . $e->getMessage()], 500);
         }
     }
 
@@ -57,23 +64,56 @@ class VehiculoController extends Controller
         try {
             $vehiculo = Vehiculo::findOrFail($id);
 
+            // Validate all possible fields
             $validator = Validator::make($request->all(), [
-                'matricula' => 'sometimes|required|string|unique:vehiculos,matricula,' . $id,
-                'marca' => 'sometimes|required|string',
-                'modelo' => 'sometimes|required|string',
-                'color' => 'nullable|string',
-                'tipovehiculo' => 'sometimes|required|string',
-                'estado' => 'sometimes|required|string|in:disponible,retirado,en_proceso'
+                'fechaentrada' => 'nullable|date',
+                'fechasalida' => 'nullable|date',
+                'lugar' => 'nullable|string|max:255',
+                'direccion' => 'nullable|string|max:255',
+                'agente' => 'nullable|string|max:255',
+                'matricula' => 'required|string|max:20',
+                'marca' => 'required|string|max:100',
+                'modelo' => 'required|string|max:100',
+                'color' => 'nullable|string|max:50',
+                'tipovehiculo' => 'required|string|max:255',
+                'estado' => 'required|string|in:En depósito,Retirado|max:50',
+                'motivo' => 'nullable|string',
+                'grua' => 'nullable|string|max:50'
             ]);
 
             if ($validator->fails()) {
                 return response()->json(['errors' => $validator->errors()], 422);
             }
 
-            $vehiculo->update($request->all());
+            // Get only the fillable fields from the request
+            $fillableData = $request->only([
+                'fechaentrada',
+                'fechasalida',
+                'lugar',
+                'direccion',
+                'agente',
+                'matricula',
+                'marca',
+                'modelo',
+                'color',
+                'tipovehiculo',
+                'estado',
+                'motivo',
+                'grua'
+            ]);
+            
+            // Handle null values for nullable fields
+            foreach ($fillableData as $key => $value) {
+                if ($value === '') {
+                    $fillableData[$key] = null;
+                }
+            }
+
+            $vehiculo->update($fillableData);
             return response()->json($vehiculo, 200);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Error updating vehicle'], 500);
+            // Log the actual error for debugging
+            return response()->json(['error' => 'Error updating vehicle: ' . $e->getMessage()], 500);
         }
     }
 

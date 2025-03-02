@@ -18,10 +18,10 @@
           <td>{{ vehiculo.marca }}</td>
           <td>{{ vehiculo.modelo }}</td>
           <td>
-            <span class="color-dot" :style="{ backgroundColor: vehiculo.color }"></span>
+            <span class="color-dot" :style="{ backgroundColor: getColorHexValue(vehiculo.color) }"></span>
             {{ vehiculo.color }}
           </td>
-          <td><span class="tipo-badge">{{ vehiculo.tipovehiculo }}</span></td>
+          <td><span class="tipo-badge">{{ getTipoVehiculoDisplay(vehiculo.tipovehiculo) }}</span></td>
           <td>
             <span :class="['status-badge', vehiculo.estado === 'Activo' ? 'status-active' : 'status-inactive']">
               {{ vehiculo.estado }}
@@ -50,7 +50,43 @@ export default {
       required: true
     }
   },
-  emits: ['edit', 'delete']
+  emits: ['edit', 'delete'],
+  data() {
+    return {
+      tiposVehiculo: {
+        'Motocicleta_aperos_motocarros_y_similares': 'Motocicleta, aperos, motocarros y similares',
+        'Turismo_hasta_12cv': 'Turismo hasta 12 cv ó Remolques hasta 750 kg',
+        'Turismo_mas_12cv': 'Turismos más de 12 cv ó Remolques más de 750 kg',
+        'Vehiculos_especiales': 'Vehículos especiales',
+        'Vehiculos_de_cortesia': 'Vehículos de cortesía',
+        'Chatarra': 'Chatarra'
+      },
+      coloresMap: {
+        'Blanco': '#FFFFFF',
+        'Negro': '#000000',
+        'Gris': '#808080',
+        'Plata': '#C0C0C0',
+        'Rojo': '#FF0000',
+        'Azul': '#0000FF',
+        'Verde': '#008000',
+        'Amarillo': '#FFFF00',
+        'Naranja': '#FFA500',
+        'Marrón': '#A52A2A',
+        'Beige': '#F5F5DC',
+        'Granate': '#800000',
+        'Azul marino': '#000080',
+        'Verde oscuro': '#006400'
+      }
+    }
+  },
+  methods: {
+    getTipoVehiculoDisplay(tipo) {
+      return this.tiposVehiculo[tipo] || tipo;
+    },
+    getColorHexValue(colorName) {
+      return this.coloresMap[colorName] || '#FFFFFF'; // Default to white if color not found
+    }
+  }
 };
 </script>
 
@@ -99,11 +135,17 @@ export default {
 }
 
 .tipo-badge {
-  background-color: var(--secondary-color);
+  display: inline-block;
+  background-color: #3498db;
   color: white;
   padding: 4px 8px;
-  border-radius: 12px;
-  font-size: 0.85em;
+  border-radius: 4px;
+  font-size: 0.75em;
+  max-width: 200px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
 }
 
 .status-badge {

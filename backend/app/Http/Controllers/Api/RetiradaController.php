@@ -12,10 +12,10 @@ class RetiradaController extends Controller
     public function index()
     {
         try {
-            $retiradas = Retirada::all();
-            return response()->json($retiradas, 200);
+            $retiradas = Retirada::with(['vehiculo'])->get();
+            return response()->json($retiradas);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Error retrieving retiradas'], 500);
+            return response()->json(['error' => 'Error al cargar retiradas'], 500);
         }
     }
 

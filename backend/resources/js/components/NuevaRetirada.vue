@@ -101,6 +101,16 @@
         />
       </div>
 
+      <div class="form-group">
+        <label for="opcionespago">Forma de Pago</label>
+        <select id="opcionespago" v-model="retirada.opcionespago" required class="form-control">
+          <option value="">Seleccione una forma de pago</option>
+          <option value="Efectivo">Efectivo</option>
+          <option value="Tarjeta">Tarjeta</option>
+          <option value="Transferencia">Transferencia</option>
+        </select>
+      </div>
+
       <div class="form-actions">
         <button type="submit" class="btn btn-primary">
           <i class="pi pi-save"></i>
@@ -128,7 +138,8 @@ export default {
         fecha: '',
         motivo: '',
         ubicacion: '',
-        total: 0
+        total: 0,
+        opcionespago: ''
       },
       selectedMarca: '',
       selectedModelo: '',
@@ -187,27 +198,44 @@ export default {
       }
     },
     async registrarRetirada() {
-      // Add validation and API call to save the data
+      if (!this.validateForm()) {
+        return;
+      }
       try {
         const vehiculoData = {
           marca: this.selectedMarca,
           modelo: this.selectedModelo,
           color: this.selectedColor
         };
-        // First create/update vehicle
-        const vehiculoResponse = await axios.post('/api/vehiculos', vehiculoData);
+        const vehiculoResponse = await axios.post('/api/vehiculos', vehiculoData, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
         
-        // Then create retirada with the vehicle id
         const retiradaData = {
           ...this.retirada,
           vehiculo_id: vehiculoResponse.data.id
         };
-        await axios.post('/api/retiradas', retiradaData);
+        await axios.post('/api/retiradas', retiradaData, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
         
         this.$router.push('/retiradas');
       } catch (error) {
         console.error('Error al registrar la retirada:', error);
+        // Aquí podrías añadir una notificación de error para el usuario
       }
+    },
+    validateForm() {
+      // Implementar validación del formulario
+      if (!this.retirada.nombre || !this.retirada.nif || !this.retirada.fecha || !this.retirada.motivo || !this.retirada.ubicacion || !this.retirada.total || !this.retirada.opcionespago || !this.selectedMarca || !this.selectedModelo || !this.selectedColor) {
+        alert('Por favor, complete todos los campos del formulario.');
+        return false;
+      }
+      return true;
     }
   }
 };

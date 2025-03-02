@@ -1,17 +1,25 @@
 <?php
 
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Api\VehiculoController;
 use App\Http\Controllers\Api\RetiradaController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\CarQueryController;
+use App\Http\Controllers\TarifasController;
 
 // Public routes
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout']);
 
 // Protected routes
-
+Route::middleware(['auth:sanctum'])->group(function () {
+    // Get authenticated user
+    Route::get('/user', function (Request $request) {
+        return $request->user();    
+    });
+    
     // Vehiculos routes
     Route::get('/vehiculos', [VehiculoController::class, 'index']);
     Route::post('/vehiculos', [VehiculoController::class, 'store']);
@@ -31,5 +39,13 @@ Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/users/{id}', [UserController::class, 'show']);
     Route::put('/users/{id}', [UserController::class, 'update']);
     Route::delete('/users/{id}', [UserController::class, 'destroy']);
+    
+    // Car API proxy routes
+    Route::get('/car-makes', [CarQueryController::class, 'getMakes']);
+    Route::get('/car-models', [CarQueryController::class, 'getModels']);
+    
+    // Tarifas routes
+    Route::get('/tarifas', [TarifasController::class, 'index']);
+});
 
 

@@ -11,13 +11,18 @@ use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         try {
+            // Check if user has admin role
+            if ($request->user()->rol !== 'admin') {
+                return response()->json(['error' => 'Unauthorized. Admin role required.'], 403);
+            }
+            
             $users = User::all();
             return response()->json($users, 200);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Error retrieving users'], 500);
+            return response()->json(['error' => 'Error retrieving users: ' . $e->getMessage()], 500);
         }
     }
 
@@ -25,9 +30,10 @@ class UserController extends Controller
     {
         try {
             $validator = Validator::make($request->all(), [
-                'name' => 'required|string|max:255',
-                'email' => 'required|string|email|max:255|unique:users',
+                'nombre' => 'required|string|max:255',
+                'usuario' => 'required|string|max:50|unique:usuarios,usuario',
                 'password' => 'required|string|min:8',
+                'rol' => 'required|in:admin,operador',
             ]);
 
             if ($validator->fails()) {
@@ -35,20 +41,26 @@ class UserController extends Controller
             }
 
             $user = User::create([
-                'name' => $request->name,
-                'email' => $request->email,
+                'nombre' => $request->nombre,
+                'usuario' => $request->usuario,
                 'password' => Hash::make($request->password),
+                'rol' => $request->rol,
             ]);
 
             return response()->json($user, 201);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Error creating user'], 500);
+            return response()->json(['error' => 'Error creating user: ' . $e->getMessage()], 500);
         }
     }
 
-    public function show($id)
+    public function show(Request $request, $id)
     {
         try {
+            // Check if user has admin role
+            if ($request->user()->rol !== 'admin') {
+                return response()->json(['error' => 'Unauthorized. Admin role required.'], 403);
+            }
+            
             $user = User::findOrFail($id);
             return response()->json($user, 200);
         } catch (\Exception $e) {
@@ -62,48 +74,56 @@ class UserController extends Controller
             $user = User::findOrFail($id);
 
             $validator = Validator::make($request->all(), [
-                'name' => 'sometimes|required|string|max:255',
-                'email' => [
+                'nombre' => 'sometimes|required|string|max:255',
+                'usuario' => [
                     'sometimes',
                     'required',
                     'string',
-                    'email',
-                    'max:255',
-                    Rule::unique('users')->ignore($user->id),
+                    'max:50',
+                    Rule::unique('usuarios', 'usuario')->ignore($user->id),
                 ],
                 'password' => 'sometimes|required|string|min:8',
+                'rol' => 'sometimes|required|in:admin,operador',
             ]);
 
             if ($validator->fails()) {
                 return response()->json(['errors' => $validator->errors()], 422);
             }
 
-            if ($request->has('name')) {
-                $user->name = $request->name;
+            if ($request->has('nombre')) {
+                $user->nombre = $request->nombre;
             }
-            if ($request->has('email')) {
-                $user->email = $request->email;
+            if ($request->has('usuario')) {
+                $user->usuario = $request->usuario;
             }
             if ($request->has('password')) {
                 $user->password = Hash::make($request->password);
+            }
+            if ($request->has('rol')) {
+                $user->rol = $request->rol;
             }
 
             $user->save();
 
             return response()->json($user, 200);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Error updating user'], 500);
+            return response()->json(['error' => 'Error updating user: ' . $e->getMessage()], 500);
         }
     }
 
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
         try {
+            // Check if user has admin role
+            if ($request->user()->rol !== 'admin') {
+                return response()->json(['error' => 'Unauthorized. Admin role required.'], 403);
+            }
+            
             $user = User::findOrFail($id);
             $user->delete();
             return response()->json(['message' => 'User deleted successfully'], 200);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Error deleting user'], 500);
+            return response()->json(['error' => 'Error deleting user: ' . $e->getMessage()], 500);
         }
     }
 }
