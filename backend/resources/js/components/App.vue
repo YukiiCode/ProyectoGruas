@@ -29,14 +29,7 @@ export default {
   methods: {
     async logout() {
       try {
-        const response = await fetch('http://localhost:8000/api/logout', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          }
-        });
+        await axios.post('http://localhost:8000/api/logout');
         localStorage.removeItem('token');
         localStorage.removeItem('userRole');
         this.isAuthenticated = false;
@@ -49,24 +42,11 @@ export default {
       const token = localStorage.getItem('token');
       if (token) {
         try {
-          const response = await fetch('http://localhost:8000/api/user', {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Accept': 'application/json'
-            }
-          });
-          
-          if (response.ok) {
-            const userData = await response.json();
-            this.isAuthenticated = true;
-            // Store user role in localStorage
-            localStorage.setItem('userRole', userData.rol ? userData.rol.toLowerCase() : '');
-          } else {
-            localStorage.removeItem('token');
-            localStorage.removeItem('userRole');
-            this.isAuthenticated = false;
-            this.$router.push('/login');
-          }
+          const response = await axios.get('http://localhost:8000/api/user');
+          const userData = response.data;
+          this.isAuthenticated = true;
+          // Store user role in localStorage
+          localStorage.setItem('userRole', userData.rol ? userData.rol.toLowerCase() : '');
         } catch (error) {
           console.error('Auth check error:', error);
           localStorage.removeItem('token');

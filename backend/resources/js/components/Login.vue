@@ -55,47 +55,26 @@ export default {
   methods: {
     async login() {
       try {
-        const response = await fetch('/api/login', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          },
-          body: JSON.stringify({
-            usuario: this.usuario,
-            password: this.password
-          })
+        const response = await axios.post('/api/login', {
+          usuario: this.usuario,
+          password: this.password
         });
 
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Login failed');
-        }
-
-        const data = await response.json();
+        const data = response.data;
         localStorage.setItem('token', data.token);
-        // Store user role after successful login
-        const userResponse = await fetch('http://localhost:8000/api/user', {
-          headers: {
-            'Authorization': `Bearer ${data.token}`,
-            'Accept': 'application/json'
-          }
-        });
+        setAuthToken(data.token);
 
-        if (userResponse.ok) {
-          const userData = await userResponse.json();
-          const userRole = userData.rol;
-          localStorage.setItem('userRole', userRole ? userRole.toLowerCase() : '');
-          console.log(`Usuario logueado como: ${userRole ? userRole.toUpperCase() : 'Usuario normal'}`);
-          this.$parent.isAuthenticated = true;
-          this.$router.push('/home');
-        }
-        else {
-          throw new Error('Failed to fetch user data');
-        }
+        // Store user role after successful login
+        const userResponse = await axios.get('/api/user');
+        const userData = userResponse.data;
+        const userRole = userData.rol;
+        localStorage.setItem('userRole', userRole ? userRole.toLowerCase() : '');
+        console.log(`Usuario logueado como: ${userRole ? userRole.toUpperCase() : 'Usuario normal'}`);
+        this.$parent.isAuthenticated = true;
+        this.$router.push('/home');
       } catch (error) {
         console.error('Login error:', error);
-        this.error = error.message || 'Error al iniciar sesión';
+        this.error = error.response?.data?.message || 'Error al iniciar sesión';
       }
     }
   }
@@ -173,7 +152,7 @@ export default {
   gap: 8px;
   padding: 12px;
   background-color: var(--error-color);
-  color: white;
+  color: rgb(188, 2, 2);
   border-radius: 4px;
   margin-bottom: 1rem;
 }

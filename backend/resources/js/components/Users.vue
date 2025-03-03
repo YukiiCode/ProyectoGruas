@@ -145,6 +145,18 @@
             />
           </div>
 
+          <!-- Campo de contraseña para edición (opcional) -->
+          <div class="form-group" v-if="showEditModal">
+            <label for="password">Cambiar Contraseña (opcional)</label>
+            <input
+              id="password"
+              v-model="formData.password"
+              type="password"
+              class="form-control"
+              placeholder="Dejar en blanco para mantener la contraseña actual"
+            />
+          </div>
+
           <div class="form-group">
             <label for="rol">Rol</label>
             <select id="rol" v-model="formData.rol" required class="form-control">
@@ -191,6 +203,15 @@
 import axios from 'axios';
 
 export default {
+  created() {
+    const token = localStorage.getItem('token');
+    if (token) {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    }
+  },
+  mounted() {
+    this.loadUsers();
+  },
   name: 'Users',
   data() {
     return {
@@ -243,7 +264,7 @@ export default {
       }
     },
     editUser(user) {
-      this.formData = { ...user };
+      this.formData = { ...user, password: '' };
       this.showEditModal = true;
     },
     confirmDelete(user) {
@@ -262,7 +283,12 @@ export default {
     async handleSubmit() {
       try {
         if (this.showEditModal) {
-          await axios.put(`/api/users/${this.formData.id}`, this.formData);
+          // Si estamos editando y no hay contraseña, eliminamos el campo para no actualizarlo
+          const userData = {...this.formData};
+          if (!userData.password) {
+            delete userData.password;
+          }
+          await axios.put(`/api/users/${this.formData.id}`, userData);
         } else {
           await axios.post('/api/users', this.formData);
         }

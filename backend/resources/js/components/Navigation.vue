@@ -79,15 +79,7 @@ export default {
       }
 
       try {
-        await fetch('http://localhost:8000/api/logout', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          }
-        });
-
+        await axios.post('/api/logout');
         localStorage.removeItem('token');
         localStorage.removeItem('userRole');
         this.isAdmin = false;
@@ -109,26 +101,14 @@ export default {
       }
 
       try {
-        const response = await fetch('http://localhost:8000/api/user', {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Accept': 'application/json'
-          }
-        });
-
-        if (response.ok) {
-          const userData = await response.json();
-          const userRole = userData.rol;
-          this.isAdmin = userRole && userRole.toLowerCase() === 'admin';
-          this.$parent.isAuthenticated = true;
-          if (userRole) {
-            localStorage.setItem('userRole', userRole.toLowerCase());
-            console.log('Current user role:', userRole.toLowerCase());
-          }
-        } else {
-          this.isAdmin = false;
-          this.$parent.isAuthenticated = false;
-          localStorage.removeItem('userRole');
+        const response = await axios.get('/api/user');
+        const userData = response.data;
+        const userRole = userData.rol;
+        this.isAdmin = userRole && userRole.toLowerCase() === 'admin';
+        this.$parent.isAuthenticated = true;
+        if (userRole) {
+          localStorage.setItem('userRole', userRole.toLowerCase());
+          console.log('Current user role:', userRole.toLowerCase());
         }
       } catch (error) {
         console.error('Error checking user role:', error);
