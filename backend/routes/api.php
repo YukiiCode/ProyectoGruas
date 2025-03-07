@@ -13,6 +13,19 @@ use App\Http\Controllers\TarifasController;
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout']);
 
+// Vehiculos routes
+Route::get('/vehiculos', [VehiculoController::class, 'index']);
+Route::post('/vehiculos', [VehiculoController::class, 'store']);
+Route::put('/vehiculos/{id}', [VehiculoController::class, 'update']);
+Route::delete('/vehiculos/{id}', [VehiculoController::class, 'destroy']);
+
+// Retiradas routes
+Route::get('/retiradas', [RetiradaController::class, 'index']);
+Route::post('/retiradas', [RetiradaController::class, 'store']);
+Route::put('/retiradas/{id}', [RetiradaController::class, 'update']);
+Route::delete('/retiradas/{id}', [RetiradaController::class, 'destroy']);
+Route::get('/retiradas/{id}/pdf', [RetiradaController::class, 'generatePDF']);
+
 // Protected routes
 Route::middleware(['auth:sanctum'])->group(function () {
     // Get authenticated user
@@ -20,18 +33,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         return $request->user();    
     });
     
-    // Vehiculos routes
-    Route::get('/vehiculos', [VehiculoController::class, 'index']);
-    Route::post('/vehiculos', [VehiculoController::class, 'store']);
-    Route::put('/vehiculos/{id}', [VehiculoController::class, 'update']);
-    Route::delete('/vehiculos/{id}', [VehiculoController::class, 'destroy']);
 
-    // Retiradas routes
-    Route::get('/retiradas', [RetiradaController::class, 'index']);
-    Route::post('/retiradas', [RetiradaController::class, 'store']);
-    Route::put('/retiradas/{id}', [RetiradaController::class, 'update']);
-    Route::delete('/retiradas/{id}', [RetiradaController::class, 'destroy']);
-    Route::get('/retiradas/{id}/pdf', [RetiradaController::class, 'generatePDF']);
 
     // User management routes
     Route::get('/users', [UserController::class, 'index']);

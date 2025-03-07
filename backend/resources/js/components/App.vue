@@ -29,19 +29,36 @@ export default {
   methods: {
     async logout() {
       try {
-        await axios.post('http://localhost:8000/api/logout');
-        localStorage.removeItem('token');
-        localStorage.removeItem('userRole');
+        const token = localStorage.getItem('token');
+        if (token) {
+          axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+          await axios.post('http://localhost:8000/api/logout');
+        }
+        
+        // Clear all authentication data
+        localStorage.clear();
         this.isAuthenticated = false;
-        this.$router.push('/login');
+        delete axios.defaults.headers.common['Authorization'];
+        
+        // Force navigation to login and reload
+        await this.$router.push('/login');
+        window.location.reload(); // Force a full page reload to reset all states
       } catch (error) {
         console.error('Logout error:', error);
+        // Even if the API call fails, clear local data
+        localStorage.clear();
+        this.isAuthenticated = false;
+        delete axios.defaults.headers.common['Authorization'];
+        await this.$router.push('/login');
+        window.location.reload();
       }
     },
     async checkAuth() {
       const token = localStorage.getItem('token');
       if (token) {
         try {
+          // Set the Authorization header for all subsequent requests
+          axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
           const response = await axios.get('http://localhost:8000/api/user');
           const userData = response.data;
           this.isAuthenticated = true;
@@ -51,6 +68,7 @@ export default {
           console.error('Auth check error:', error);
           localStorage.removeItem('token');
           localStorage.removeItem('userRole');
+          delete axios.defaults.headers.common['Authorization'];
           this.isAuthenticated = false;
           if (this.$route.path !== '/login') {
             this.$router.push('/login');
@@ -58,12 +76,13 @@ export default {
         }
       } else {
         localStorage.removeItem('userRole');
+        delete axios.defaults.headers.common['Authorization'];
         this.isAuthenticated = false;
         if (this.$route.path !== '/login') {
           this.$router.push('/login');
         }
       }
-    }
+    },
   },
   created() {
     this.checkAuth();

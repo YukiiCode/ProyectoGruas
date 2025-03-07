@@ -79,14 +79,28 @@ export default {
       }
 
       try {
+        // Set the Authorization header before making the logout request
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         await axios.post('/api/logout');
-        localStorage.removeItem('token');
-        localStorage.removeItem('userRole');
+        
+        // Clear all authentication data
+        localStorage.clear();
         this.isAdmin = false;
         this.$parent.isAuthenticated = false;
-        this.$router.push('/login');
+        delete axios.defaults.headers.common['Authorization'];
+        
+        // Force navigation to login
+        await this.$router.push('/login');
+        window.location.reload(); // Force a full page reload to reset all states
       } catch (error) {
         console.error('Error during logout:', error);
+        // Even if the API call fails, clear local data
+        localStorage.clear();
+        this.isAdmin = false;
+        this.$parent.isAuthenticated = false;
+        delete axios.defaults.headers.common['Authorization'];
+        await this.$router.push('/login');
+        window.location.reload();
       }
     },
     async checkUserRole() {
